@@ -1,0 +1,413 @@
+Sub TopluMailGonder()
+
+ 
+
+    Dim wsAdres As Worksheet
+
+    Dim wsSablon As Worksheet
+
+    Dim wsList3 As Worksheet, wsList4 As Worksheet, wsList5 As Worksheet
+
+    Dim ws20 As Worksheet, wsL1 As Worksheet, wsL2 As Worksheet
+
+   
+
+    Dim dict As Object
+
+    Dim sonSatir As Long
+
+    Dim i As Long
+
+    Dim isim As Variant   
+
+   
+
+    Dim mailAdres As String
+
+   
+
+    Dim OutApp As Object
+
+    Dim OutMail As Object
+
+   
+
+    Dim yeniWB As Workbook
+
+    Dim tempPath As String
+
+    Dim dosyaAdi As String
+
+   
+
+    
+
+    
+
+    Set wsAdres = ThisWorkbook.Sheets("Mail Adresleri")
+
+    Set wsSablon = ThisWorkbook.Sheets("Mail Şablonu")
+
+   
+
+    Set wsList3 = ThisWorkbook.Sheets("List3")
+
+    Set wsList4 = ThisWorkbook.Sheets("List4")
+
+    Set wsList5 = ThisWorkbook.Sheets("List5")
+
+   
+
+    Set ws20 = ThisWorkbook.Sheets("20Mio_Uzeri_Analiz")
+
+    Set wsL1 = ThisWorkbook.Sheets("List1")
+
+    Set wsL2 = ThisWorkbook.Sheets("List2")
+
+   
+
+    Set dict = CreateObject("Scripting.Dictionary")
+
+   
+
+    'List3'teki benzersiz isimleri al
+
+    sonSatir = wsList3.Cells(wsList3.Rows.Count, "Y").End(xlUp).Row
+
+   
+
+    'For i = 2 To sonSatir
+
+    '    If Trim(wsList3.Cells(i, "Y").Value) <> "" Then
+
+    '        If Not dict.exists(Trim(wsList3.Cells(i, "Y").Value)) Then
+
+    '            dict.Add Trim(wsList3.Cells(i, "Y").Value), 1
+
+    '        End If
+
+    '    End If
+
+    'Next i
+
+   
+
+    Dim yasakli As Object
+
+    Set yasakli = CreateObject("Scripting.Dictionary")
+
+   
+
+    ' Mail gitmeyecek birimler
+
+    yasakli.Add "RİSK PLANLAMA VE İZLEME MÜDÜRLÜĞÜ 1", 1
+
+    yasakli.Add "RİSK PLANLAMA VE İZLEME MÜDÜRLÜĞÜ 2", 1
+
+    yasakli.Add "RİSK PLANLAMA VE İZLEME MÜDÜRLÜĞÜ 3", 1
+
+    yasakli.Add "RİSK PLANLAMA VE İZLEME MÜDÜRLÜĞÜ 4", 1
+
+    yasakli.Add "ÖZELLİKLİ KREDİLER PORTFÖY YÖNETİMİ MÜDÜRLÜĞÜ", 1
+
+    yasakli.Add "FİNANSAL YENİDEN YAPILANDIRMA MÜDÜRLÜĞÜ", 1
+
+   
+
+    
+
+    For i = 2 To sonSatir
+
+       
+
+        Dim birim As String
+
+        birim = Trim(wsList3.Cells(i, "Y").Value)
+
+       
+
+        If birim <> "" Then
+
+           
+
+            ' Eğer yasaklı listede YOKSA ekle
+
+            If Not yasakli.exists(birim) Then
+
+               
+
+                If Not dict.exists(birim) Then
+
+                    dict.Add birim, 1
+
+                End If
+
+               
+
+            End If
+
+           
+
+        End If
+
+       
+
+    Next i
+
+   
+
+    Set OutApp = CreateObject("Outlook.Application")
+
+   
+
+    For Each isim In dict.Keys
+
+       
+
+        On Error Resume Next
+
+        mailAdres = Application.WorksheetFunction.VLookup(isim, wsAdres.Range("A:B"), 2, False)
+
+        On Error GoTo 0
+
+       
+
+        If mailAdres <> "" Then
+
+           
+
+            Set yeniWB = Workbooks.Add
+
+           
+
+            'Sabit sheetler
+
+            ws20.Copy After:=yeniWB.Sheets(yeniWB.Sheets.Count)
+
+            wsL1.Copy After:=yeniWB.Sheets(yeniWB.Sheets.Count)
+
+            wsL2.Copy After:=yeniWB.Sheets(yeniWB.Sheets.Count)
+
+           
+
+            'List3
+
+            wsList3.Copy After:=yeniWB.Sheets(yeniWB.Sheets.Count)
+
+           
+
+            With yeniWB.Sheets(yeniWB.Sheets.Count)
+
+                .Name = "List3"
+
+                .Range("A1").CurrentRegion.AutoFilter Field:=25, Criteria1:="<>" & isim
+
+                On Error Resume Next
+
+                .Range("A1").CurrentRegion.Offset(1).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+
+                On Error GoTo 0
+
+                .AutoFilterMode = False
+
+            End With
+
+ 
+
+           
+
+            'List4
+
+            wsList4.Copy After:=yeniWB.Sheets(yeniWB.Sheets.Count)
+
+           
+
+            With yeniWB.Sheets(yeniWB.Sheets.Count)
+
+                .Name = "List4"
+
+                .Range("A1").CurrentRegion.AutoFilter Field:=25, Criteria1:="<>" & isim
+
+                On Error Resume Next
+
+                .Range("A1").CurrentRegion.Offset(1).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+
+                On Error GoTo 0
+
+                .AutoFilterMode = False
+
+            End With
+
+ 
+
+           
+
+            'List5
+
+            wsList5.Copy After:=yeniWB.Sheets(yeniWB.Sheets.Count)
+
+ 
+
+            With yeniWB.Sheets(yeniWB.Sheets.Count)
+
+                .Name = "List5"
+
+                .Range("A1").CurrentRegion.AutoFilter Field:=25, Criteria1:="<>" & isim
+
+                On Error Resume Next
+
+                .Range("A1").CurrentRegion.Offset(1).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+
+                On Error GoTo 0
+
+                .AutoFilterMode = False
+
+            End With
+
+ 
+
+           
+
+            'İlk boş sheeti sil
+
+            Application.DisplayAlerts = False
+
+            yeniWB.Sheets(1).Delete
+
+            Application.DisplayAlerts = True
+
+           
+
+            tempPath = Environ("TEMP") & "\"
+
+            dosyaAdi = tempPath & isim & "_Rapor.xlsx"
+
+           
+
+            'List3 sheetini aktif yap
+
+            yeniWB.Sheets("List3").Activate
+
+           
+
+            yeniWB.SaveAs dosyaAdi
+
+            yeniWB.Close
+
+           
+
+            Set OutMail = OutApp.CreateItem(0)
+
+ 
+
+            Dim gonderen As String
+
+            Dim mailMetni As String
+
+            Dim imza As String
+
+           
+
+            gonderen = wsSablon.Range("B1").Value   ' Shared mailbox adresi
+
+           
+
+            mailMetni = wsSablon.Range("B5").Value
+
+           mailMetni = Replace(mailMetni, vbCrLf, "<br>")
+
+            mailMetni = Replace(mailMetni, vbLf, "<br>")
+
+           
+
+            With OutMail
+
+           
+
+                .To = mailAdres
+
+                .CC = wsSablon.Range("B3").Value
+
+                .Subject = wsSablon.Range("B4").Value
+
+                .Attachments.Add dosyaAdi
+
+               
+
+                If gonderen <> "" Then
+
+                    .SentOnBehalfOfName = gonderen
+
+                End If
+
+               
+
+                .Display
+
+               
+
+                Dim wdDoc As Object
+
+                Dim wdRange As Object
+
+               
+
+                Set wdDoc = OutMail.GetInspector.WordEditor
+
+                Set wdRange = wdDoc.Range(0, 0)
+
+               
+
+                wdRange.Text = wsSablon.Range("B5").Value
+
+               
+
+                wdRange.Font.Name = wsSablon.Range("B5").Font.Name
+
+                wdRange.Font.Size = wsSablon.Range("B5").Font.Size
+
+               
+
+                
+
+                
+
+                imza = .HTMLBody  'Outlook'un eklediği imzayı al
+
+               
+
+                '.HTMLBody = mailMetni & "<br><br>" & imza
+
+               
+
+                .HTMLBody = imza
+
+                
+
+                
+
+                Application.Wait Now + TimeValue("0:00:02")
+
+                Kill dosyaAdi
+
+           
+
+            End With
+
+           
+
+            
+
+        End If
+
+       
+
+    Next isim
+
+   
+
+    MsgBox "Mailler hazırlandı."
+
+ 
+
+End Sub
